@@ -1147,16 +1147,40 @@ Before writing `output/build/story.html`, verify:
 
 ## Output
 
-Write the final assembled HTML to: `output/build/story.html`
+Write TWO versions of the final HTML:
 
-The file must be a complete, valid HTML5 document. Self-contained except for:
-- Google Fonts CDN link (graceful fallback via system fonts if offline)
-- `js/scrollama.min.js` (copied from assets to `output/build/js/`)
-- Images in `images/` (copied from `output/images/` to `output/build/images/`)
+### 1. `output/build/story.html` (development version)
+- References external files: `js/scrollama.min.js`, `images/*`
+- Smallest file size, fast iteration during development
+
+### 2. `output/build/story-standalone.html` (shareable version — REQUIRED)
+- **Fully self-contained single HTML file. Zero external dependencies.**
+- ALL images base64-encoded inline as `data:image/jpeg;base64,...`
+  - In CSS `background-image: url(...)` — replace file path with data URI
+  - In `<img src="...">` — replace file path with data URI
+- Before base64 encoding, **resize images to max 1200px wide** and compress to JPEG quality 60 using:
+  ```bash
+  sips -Z 1200 "$IMG" --out "${IMG%.jpg}-sm.jpg" -s formatOptions 60
+  ```
+- Scrollama JS **inlined as `<script>...</script>`** (read file content, embed directly)
+- Google Fonts CDN link kept (graceful fallback to system fonts if offline)
+- Target size: under 2MB total
+
+This is the version users share via email, messenger, or any file transfer. One file, everything works.
+
+### Assembly steps for standalone version:
+1. First create `story.html` (development version) as normal
+2. Copy to `story-standalone.html`
+3. For each image in `output/build/images/`:
+   - Resize: `sips -Z 1200 "$IMG" --out "$IMG-sm.jpg" -s formatOptions 60`
+   - Base64 encode: `base64 -i "$IMG-sm.jpg"`
+   - Replace all occurrences in HTML (both `url('images/...')` and `src="images/..."`)
+4. Read `js/scrollama.min.js`, replace `<script src="js/scrollama.min.js"></script>` with `<script>{content}</script>`
+5. Verify no remaining references to `images/` or `js/` paths
 
 After writing, report:
-- File path: `output/build/story.html`
-- File size in KB
+- File paths: `output/build/story.html` + `output/build/story-standalone.html`
+- File sizes (both versions)
 - Number of beats assembled
 - Any beats skipped (with reason)
 - Any data-viz beats rendered as placeholders (with reason)
