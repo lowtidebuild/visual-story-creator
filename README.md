@@ -33,56 +33,46 @@ No templates. No drag-and-drop. No manual layout. Just a topic and a pipeline th
 
 ## Pipeline Architecture
 
-```
- Topic
-  │
-  ▼
- ┌─────────────────────────────────────────────┐
- │  Step 1.  Deep Research                      │  → Researcher Agent
- │           15–30 research questions            │     web search, cross-verification
- │           quantitative data extraction        │     70%+ verification rate
- └──────────────────┬──────────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────────┐
- │  Step 2.  Story Arc Design                   │  → Arc Designer Agent
- │           5–20 beat narrative structure       │     HOOK → BUILD → TURN → RESOLVE
- │           visual directives per beat          │     data-viz specifications
- └──────────────────┬──────────────────────────┘
-                    ▼
- ╔═════════════════════════════════════════════╗
- ║  Gate 1   Human reviews the arc             ║
- ║           approve · revise · reject          ║
- ╚══════════════════╤══════════════════════════╝
-                    ▼
- ┌─────────────────────────────────────────────┐
- │  Step 3.  Section Writing (parallel)         │  → Section Writer Agent × N
- │           up to 5 beats written concurrently  │     FT/NYT editorial style
- │           per-beat retry on failure            │     strict word limits
- └──────────────────┬──────────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────────┐
- │  Step 4.  Editing & Fact-Check               │  → Editor Agent
- │           narrative flow review               │     fact verification
- │           style enforcement                   │     in-place rewrites
- └──────────────────┬──────────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────────┐
- │  Step 7.  HTML Assembly                      │  → Layout Assembler Agent
- │           scroll animations (Scrollama)       │     responsive layout
- │           data tables, progress bar           │     single self-contained file
- └──────────────────┬──────────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────────┐
- │  Step 7.5 QA Check (non-blocking)            │  → qa-check.py
- │           viewport, OG tags, accessibility    │     beat count validation
- └──────────────────┬──────────────────────────┘
-                    ▼
- ╔═════════════════════════════════════════════╗
- ║  Gate 2   Human reviews the final HTML      ║
- ║           approve · revise beats · reject    ║
- ╚══════════════════╤══════════════════════════╝
-                    ▼
-               story.html
+```mermaid
+graph TD
+    TOPIC([" 📝 Topic "]) --> S1
+
+    S1["🔬 Step 1 · Deep Research\n15–30 questions · web search · cross-verification\n70%+ verification rate"]
+    S1 --> S2
+
+    S2["🏗️ Step 2 · Story Arc Design\n5–20 beat narrative · HOOK → BUILD → TURN → RESOLVE\nvisual directives · data-viz specs"]
+    S2 --> G1
+
+    G1{{"🚦 Gate 1 · Human Review\napprove · revise · reject"}}
+    G1 -- "✅ Approved" --> S3
+    G1 -- "✏️ Revise" --> S2
+
+    S3["✍️ Step 3 · Section Writing ×N\nup to 5 beats in parallel · FT/NYT style\nper-beat retry on failure"]
+    S3 --> S4
+
+    S4["📋 Step 4 · Editing & Fact-Check\nnarrative flow · fact verification\nstyle enforcement · in-place rewrites"]
+    S4 --> S7
+
+    S7["⚡ Step 7 · HTML Assembly\nScrollama animations · responsive layout\ndata tables · single self-contained file"]
+    S7 --> S75
+
+    S75["🧪 Step 7.5 · QA Check\nviewport · OG tags · accessibility\nnon-blocking"]
+    S75 --> G2
+
+    G2{{"🚦 Gate 2 · Final Review\napprove · revise beats · reject"}}
+    G2 -- "✅ Approved" --> OUT
+    G2 -- "✏️ Revise beats" --> S3
+    G2 -- "❌ Reject" --> S2
+
+    OUT([" 🎉 story.html "])
+
+    classDef step fill:#1e1b4b,stroke:#7c3aed,stroke-width:2px,color:#f0f0f5
+    classDef gate fill:#1e1b4b,stroke:#f59e0b,stroke-width:2px,color:#fbbf24
+    classDef io fill:#7c3aed,stroke:#7c3aed,stroke-width:2px,color:#fff
+
+    class S1,S2,S3,S4,S7,S75 step
+    class G1,G2 gate
+    class TOPIC,OUT io
 ```
 
 <br>
