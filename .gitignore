@@ -1,0 +1,11 @@
+# Output (generated per run)
+output/*
+!output/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
