@@ -2,6 +2,14 @@
 output/*
 !output/.gitkeep
 
+# Design docs & plans (project-specific, not source code)
+design-doc.md
+TODOS.md
+docs/superpowers/
+
+# Reference analysis (local research, not source code)
+input/ft-analysis/
+
 # Python
 __pycache__/
 *.pyc
