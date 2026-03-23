@@ -1147,18 +1147,15 @@ Before writing `output/build/story.html`, verify:
 
 ## Output
 
-Write TWO versions of the final HTML:
+Write a single **self-contained HTML file**: `output/build/story.html`
 
-### 1. `output/build/story.html` (development version)
-- References external files: `js/scrollama.min.js`, `images/*`
-- Smallest file size, fast iteration during development
+**Zero external dependencies.** This file must work when shared via email, messenger, or any file transfer. One file, everything works.
 
-### 2. `output/build/story-standalone.html` (shareable version — REQUIRED)
-- **Fully self-contained single HTML file. Zero external dependencies.**
+### Self-contained requirements:
 - ALL images base64-encoded inline as `data:image/jpeg;base64,...`
-  - In CSS `background-image: url(...)` — replace file path with data URI
-  - In `<img src="...">` — replace file path with data URI
-- Before base64 encoding, **resize images to max 1200px wide** and compress to JPEG quality 60 using:
+  - In CSS `background-image: url(...)` — use data URI directly
+  - In `<img src="...">` — use data URI directly
+- Before base64 encoding, **resize images to max 1200px wide** and compress to JPEG quality 60:
   ```bash
   sips -Z 1200 "$IMG" --out "${IMG%.jpg}-sm.jpg" -s formatOptions 60
   ```
@@ -1166,21 +1163,19 @@ Write TWO versions of the final HTML:
 - Google Fonts CDN link kept (graceful fallback to system fonts if offline)
 - Target size: under 2MB total
 
-This is the version users share via email, messenger, or any file transfer. One file, everything works.
-
-### Assembly steps for standalone version:
-1. First create `story.html` (development version) as normal
-2. Copy to `story-standalone.html`
-3. For each image in `output/build/images/`:
-   - Resize: `sips -Z 1200 "$IMG" --out "$IMG-sm.jpg" -s formatOptions 60`
-   - Base64 encode: `base64 -i "$IMG-sm.jpg"`
-   - Replace all occurrences in HTML (both `url('images/...')` and `src="images/..."`)
-4. Read `js/scrollama.min.js`, replace `<script src="js/scrollama.min.js"></script>` with `<script>{content}</script>`
-5. Verify no remaining references to `images/` or `js/` paths
+### Assembly steps:
+1. Build the complete HTML with all CSS inline in `<style>`
+2. For each image downloaded to `output/build/images/`:
+   - Resize + compress
+   - Base64 encode
+   - Embed directly in the HTML as data URIs
+3. Read `assets/js/scrollama.min.js` content, embed as inline `<script>`
+4. Write to `output/build/story.html`
+5. Verify: no references to external `images/` or `js/` paths remain
 
 After writing, report:
-- File paths: `output/build/story.html` + `output/build/story-standalone.html`
-- File sizes (both versions)
+- File path: `output/build/story.html`
+- File size
 - Number of beats assembled
 - Any beats skipped (with reason)
 - Any data-viz beats rendered as placeholders (with reason)
