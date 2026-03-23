@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://visual-story-engine/schemas/pipeline_state.schema.json",
+  "title": "Pipeline State",
+  "description": "Data contract for pipeline_state.json managed by the Orchestrator. Tracks execution state, gate approvals, and artifact locations across all pipeline steps.",
+  "type": "object",
+  "required": [
+    "pipeline",
+    "topic",
+    "language",
+    "started_at",
+    "updated_at",
+    "current_step",
+    "last_completed_step",
+    "gate1_status",
+    "gate2_status",
+    "step_artifacts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "pipeline": {
+      "type": "string",
+      "const": "visual-story",
+      "description": "Pipeline identifier. Always 'visual-story' to distinguish from other pipeline state files."
+    },
+    "topic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "The input topic for this pipeline run"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["ko", "en"],
+      "description": "Primary language for the output story"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when the pipeline run was initiated"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime of the most recent state update"
+    },
+    "current_step": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9,
+      "description": "The step currently being executed or awaiting action (1-9)"
+    },
+    "last_completed_step": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9,
+      "description": "The most recently successfully completed step. 0 means no step has completed yet."
+    },
+    "gate1_status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected"],
+      "description": "Gate 1 (Story Arc Approval) status. Separates Step 2 from Step 3."
+    },
+    "gate2_status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected"],
+      "description": "Gate 2 (Final Review) status. Separates Step 7 from pipeline completion."
+    },
+    "gate1_feedback": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Optional human feedback recorded when gate1_status is 'rejected'. Used to re-run Step 2."
+    },
+    "gate2_feedback": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Optional human feedback recorded when gate2_status is 'rejected'. May include beat numbers and revision instructions."
+    },
+    "beats": {
+      "type": "array",
+      "description": "Optional snapshot of beat IDs and types from the approved story arc. Populated after Gate 1 approval.",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": ["hero", "narrative", "data-viz", "quote", "comparison", "timeline", "conclusion"]
+          }
+        }
+      }
+    },
+    "step_artifacts": {
+      "$ref": "#/$defs/step_artifacts"
+    }
+  },
+  "$defs": {
+    "step_artifact": {
+      "type": "object",
+      "title": "Step Artifact",
+      "description": "Execution record and output pointers for a single pipeline step",
+      "required": ["name", "status", "outputs", "retry_count"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Human-readable name of the step (e.g., 'Deep Research', 'Story Arc Design')"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "running", "completed", "failed"],
+          "description": "Current execution status of this step"
+        },
+        "outputs": {
+          "type": "array",
+          "description": "Relative file paths of artifacts produced by this step (relative to project root)",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Number of times this step has been retried. Maximum 2 retries allowed."
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime when this step reached 'completed' status"
+        }
+      }
+    },
+    "step_artifacts": {
+      "type": "object",
+      "title": "Step Artifacts",
+      "description": "Artifact records for each pipeline step. Steps 5 and 6 are Phase 2 and absent in Phase 1 runs.",
+      "required": ["step_1", "step_2", "step_3", "step_4", "step_7"],
+      "additionalProperties": false,
+      "properties": {
+        "step_1": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 1: Deep Research — Research Agent. Outputs: research_report.md, data_points.json, citations.json"
+        },
+        "step_2": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 2: Story Arc Design — Story Arc Designer Agent. Outputs: story_arc.json"
+        },
+        "step_3": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 3: Section Writing — Visual Section Writer Agent (parallel by wave). Outputs: beat_{NN}_{type}.md files"
+        },
+        "step_4": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 4: Editing and Fact-Check — Editor Agent. Outputs: edited section files, edit_report.md"
+        },
+        "step_5": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 5: Data Visualization — DataViz Agent (Phase 2). Outputs: viz_{NN}_{type}.js, dataviz_manifest.json"
+        },
+        "step_6": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 6: Image Curation — Image Curator Agent (Phase 2). Outputs: output/images/, image_manifest.json"
+        },
+        "step_7": {
+          "allOf": [{ "$ref": "#/$defs/step_artifact" }],
+          "description": "Step 7: HTML Assembly — Layout Assembler Agent. Outputs: output/build/story.html"
+        }
+      }
+    }
+  }
+}

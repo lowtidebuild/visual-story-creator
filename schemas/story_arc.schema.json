@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://visual-story-engine/schemas/story_arc.schema.json",
+  "title": "Story Arc",
+  "description": "Data contract for story_arc.json output from Story Arc Designer Agent. Consumed by Section Writer and Layout Assembler.",
+  "type": "object",
+  "required": ["title", "subtitle", "total_beats", "estimated_read_time", "beats", "meta"],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Main headline of the visual story"
+    },
+    "subtitle": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400,
+      "description": "Subheadline or deck of the visual story"
+    },
+    "total_beats": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 20,
+      "description": "Total number of visual beats in the story"
+    },
+    "estimated_read_time": {
+      "type": "string",
+      "pattern": "^\\d+ min$",
+      "examples": ["8 min", "12 min"],
+      "description": "Estimated reading time in minutes, format: '{N} min'"
+    },
+    "beats": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 20,
+      "description": "Ordered array of visual beats composing the story",
+      "items": {
+        "$ref": "#/$defs/beat"
+      }
+    },
+    "meta": {
+      "$ref": "#/$defs/meta"
+    }
+  },
+  "$defs": {
+    "meta": {
+      "type": "object",
+      "title": "Story Meta",
+      "description": "Metadata about the story topic and presentation settings",
+      "required": ["topic", "language", "accent_color"],
+      "additionalProperties": false,
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "The topic or subject matter of the visual story"
+        },
+        "language": {
+          "type": "string",
+          "enum": ["ko", "en"],
+          "description": "Primary language of the story content"
+        },
+        "accent_color": {
+          "type": "string",
+          "pattern": "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$",
+          "examples": ["#E63946", "#457B9D", "#2A9D8F"],
+          "description": "Primary accent color for the story design system, in hex format"
+        }
+      }
+    },
+    "data_viz_spec": {
+      "type": "object",
+      "title": "Data Visualization Specification",
+      "description": "Specification for a data visualization in a beat. Consumed by DataViz Agent.",
+      "required": ["chart_type", "data_key", "title", "animation", "is_simulated", "color_scheme"],
+      "additionalProperties": false,
+      "properties": {
+        "chart_type": {
+          "type": "string",
+          "enum": ["bar", "line", "pie", "doughnut", "radar", "scatter", "timeline", "treemap", "force", "sankey"],
+          "description": "Chart library type. bar/line/pie/doughnut/radar/scatter use Chart.js; timeline/treemap/force/sankey use D3 micromodules."
+        },
+        "data_key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key into data_points.json to retrieve the data series for this chart"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Display title for the chart"
+        },
+        "x_label": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "X-axis label (for applicable chart types)"
+        },
+        "y_label": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Y-axis label (for applicable chart types)"
+        },
+        "animation": {
+          "type": "string",
+          "enum": ["fade-in", "draw", "count-up"],
+          "description": "Scroll-triggered animation style for the chart"
+        },
+        "is_simulated": {
+          "type": "boolean",
+          "description": "If true, chart uses simulated data and must display '[시뮬레이션 데이터]' label"
+        },
+        "color_scheme": {
+          "type": "string",
+          "enum": ["accent", "neutral", "sequential"],
+          "description": "Color palette variant for the chart"
+        }
+      }
+    },
+    "beat": {
+      "type": "object",
+      "title": "Visual Beat",
+      "description": "A single scroll section in the visual story",
+      "required": ["id", "type", "headline", "visual_directive", "transition"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential beat identifier, starting at 1"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["hero", "narrative", "data-viz", "quote", "comparison", "timeline", "conclusion"],
+          "description": "Visual section type, determining layout and expected content"
+        },
+        "headline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Primary headline for this beat"
+        },
+        "subheadline": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Optional secondary headline or deck text for this beat"
+        },
+        "visual_directive": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Natural language instruction to Image Curator and Layout Assembler describing the intended visual"
+        },
+        "image_directive": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional specific image search query or directive for the Image Curator Agent"
+        },
+        "data_viz": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/data_viz_spec" }
+          ],
+          "description": "Data visualization specification for data-viz type beats. Must be null for non-data-viz beats."
+        },
+        "transition": {
+          "type": "string",
+          "enum": ["fade-up", "scroll-trigger", "none"],
+          "description": "Scroll transition animation applied when this beat enters the viewport"
+        }
+      }
+    }
+  }
+}

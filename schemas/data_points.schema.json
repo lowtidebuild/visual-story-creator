@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://visual-story-engine/schemas/data_points.schema.json",
+  "title": "Data Points",
+  "description": "Data contract for data_points.json output from Research Agent. Consumed by DataViz Agent and Story Arc Designer.",
+  "type": "object",
+  "required": ["topic", "collected_at", "data_points"],
+  "additionalProperties": false,
+  "properties": {
+    "topic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "The research topic that produced these data points"
+    },
+    "collected_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime when the data was collected"
+    },
+    "data_points": {
+      "type": "object",
+      "description": "Map of named data series, keyed by identifier. Keys correspond to data_viz.data_key values in story_arc.json.",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/data_point"
+      }
+    }
+  },
+  "$defs": {
+    "data_point": {
+      "type": "object",
+      "title": "Data Point Series",
+      "description": "A named data series with one or more labeled numeric values",
+      "required": ["label", "values", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Human-readable display name for this data series"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional explanation of what this data series represents or how it was collected"
+        },
+        "unit": {
+          "type": "string",
+          "maxLength": 50,
+          "examples": ["%", "억 원", "만 명", "USD"],
+          "description": "Optional unit of measurement for the values"
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Array of labeled data points in this series",
+          "items": {
+            "$ref": "#/$defs/data_value"
+          }
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "Attribution string for the data source (e.g., publication, organization, report name)"
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional URL linking to the original data source"
+        },
+        "is_simulated": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, values are simulated/estimated rather than from a real source. DataViz Agent must display '[시뮬레이션 데이터]' label."
+        }
+      }
+    },
+    "data_value": {
+      "type": "object",
+      "title": "Data Value",
+      "description": "A single labeled numeric value within a data series",
+      "required": ["label", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Category label or axis label for this data point (e.g., year, region, category name)"
+        },
+        "value": {
+          "type": "number",
+          "description": "Numeric value for this data point"
+        }
+      }
+    }
+  }
+}
