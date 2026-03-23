@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://visual-story-engine/schemas/story_arc.schema.json",
+  "$id": "https://visual-story-creator/schemas/story_arc.schema.json",
   "title": "Story Arc",
   "description": "Data contract for story_arc.json output from Story Arc Designer Agent. Consumed by Section Writer and Layout Assembler.",
   "type": "object",

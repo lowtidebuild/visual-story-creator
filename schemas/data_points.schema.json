@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://visual-story-engine/schemas/data_points.schema.json",
+  "$id": "https://visual-story-creator/schemas/data_points.schema.json",
   "title": "Data Points",
   "description": "Data contract for data_points.json output from Research Agent. Consumed by DataViz Agent and Story Arc Designer.",
   "type": "object",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://visual-story-engine/schemas/pipeline_state.schema.json",
+  "$id": "https://visual-story-creator/schemas/pipeline_state.schema.json",
   "title": "Pipeline State",
   "description": "Data contract for pipeline_state.json managed by the Orchestrator. Tracks execution state, gate approvals, and artifact locations across all pipeline steps.",
   "type": "object",
