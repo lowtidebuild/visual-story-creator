@@ -176,6 +176,10 @@ All progress is tracked in `output/pipeline_state.json`. If a run is interrupted
 
 <br>
 
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
+
 ---
 
 <div align="center">
